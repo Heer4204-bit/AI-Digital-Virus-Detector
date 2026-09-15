@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Digital Virus Detector ☣️</title>
+    <style>
+        :root {
+            --bg-color: #0d1117;
+            --card-bg: #161b22;
+            --border-color: #30363d;
+            --accent-green: #2ea043;
+            --accent-cyan: #00f2fe;
+            --accent-red: #da3633;
+            --text-color: #c9d1d9;
+            --text-light: #f0f6fc;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Glowing Accent line */
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--accent-cyan), var(--accent-green));
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            color: var(--text-light);
+            font-size: 2rem;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        header p {
+            font-size: 0.95rem;
+            color: #8b949e;
+        }
+
+        /* Upload Section */
+        .upload-area {
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.3s, background-color 0.3s;
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        .upload-area:hover, .upload-area.dragover {
+            border-color: var(--accent-cyan);
+            background-color: rgba(0, 242, 254, 0.03);
+        }
+
+        .upload-icon {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .file-info {
+            margin-top: 10px;
+            font-weight: bold;
+            color: var(--accent-cyan);
+        }
+
+        /* Controls */
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+            color: #000;
+            font-weight: bold;
+            font-size: 1rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: transform 0.2s, opacity 0.3s;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        .btn:disabled {
+            background: var(--border-color);
+            color: #8b949e;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Progress Scanner Bar */
+        .scan-progress-container {
+            margin-top: 25px;
+            display: none;
+        }
+
+        .progress-bar-bg {
+            width: 100%;
+            height: 10px;
+            background-color: var(--border-color);
+            border-radius: 5px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--accent-cyan), var(--accent-green));
+            transition: width 0.3s ease;
+        }
+
+        /* Log / Terminal Window */
+        .terminal {
+            background-color: #090d11;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 15px;
+            margin-top: 25px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.85rem;
+            height: 140px;
+            overflow-y: auto;
+            color: #00ff66;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .terminal-line {
+            line-height: 1.4;
+        }
+
+        .terminal-line.warning { color: #e3b341; }
+        .terminal-line.danger { color: var(--accent-red); }
+
+        /* Results Box */
+        .result-box {
+            margin-top: 25px;
+            padding: 20px;
+            border-radius: 8px;
+            display: none;
+            text-align: center;
+        }
+
+        .result-box.safe {
+            background-color: rgba(46, 160, 67, 0.15);
+            border: 1px solid var(--accent-green);
+            color: #3fb950;
+        }
+
+        .result-box.threat {
+            background-color: rgba(218, 54, 51, 0.15);
+            border: 1px solid var(--accent-red);
+            color: #f85149;
+        }
+
+        .result-box h3 {
+            font-size: 1.3rem;
+            margin-bottom: 5px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>AI Digital Virus Detector ☣️</h1>
+            <p>Upload files or binaries for deep neural network malware signature analysis</p>
+        </header>
+
+        <!-- Drop Zone -->
+        <div class="upload-area" id="dropZone">
+            <div class="upload-icon">📁</div>
+            <p><strong>Choose a file</strong> or drag & drop it here</p>
+            <p style="font-size: 0.8rem; margin-top: 5px; color: #8b949e;">Supports EXE, DLL, PDF, ZIP, script files (Max: 50MB)</p>
+            <input type="file" id="fileInput" class="file-input">
+            <div class="file-info" id="fileInfo"></div>
+        </div>
+
+        <button class="btn" id="scanBtn" disabled>Scan File with AI Model</button>
+
+        <!-- Scanning Bar -->
+        <div class="scan-progress-container" id="progressContainer">
+            <p id="statusText" style="margin-bottom: 8px; font-size: 0.9rem;">Initializing Neural Engine...</p>
+            <div class="progress-bar-bg">
+                <div class="progress-bar-fill" id="progressBar"></div>
+            </div>
+        </div>
+
+        <!-- Terminal Logs -->
+        <div class="terminal" id="terminalLog">
+            <div class="terminal-line">[SYSTEM] AI Engine v4.0.2 ready...</div>
+            <div class="terminal-line">[SYSTEM] Waiting for target file payload...</div>
+        </div>
+
+        <!-- Result Card -->
+        <div class="result-box" id="resultBox">
+            <h3 id="resultTitle">Scan Complete</h3>
+            <p id="resultDesc">Detailed result metrics will appear here.</p>
+        </div>
+    </div>
+
+    <script>
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const fileInfo = document.getElementById('fileInfo');
+        const scanBtn = document.getElementById('scanBtn');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressBar = document.getElementById('progressBar');
+        const statusText = document.getElementById('statusText');
+        const terminalLog = document.getElementById('terminalLog');
+        const resultBox = document.getElementById('resultBox');
+        const resultTitle = document.getElementById('resultTitle');
+        const resultDesc = document.getElementById('resultDesc');
+
+        let selectedFile = null;
+
+        // Trigger file input click
+        dropZone.addEventListener('click', () => fileInput.click());
+
+        // File Selection Listener
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFileSelection(e.target.files[0]);
+            }
+        });
+
+        // Drag and Drop Events
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                dropZone.classList.add('dragover');
+            }, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('dragover');
+            }, false);
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFileSelection(files[0]);
+            }
+        });
+
+        function handleFileSelection(file) {
+            selectedFile = file;
+            fileInfo.textContent = `Selected: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+            scanBtn.disabled = false;
+            resetUI();
+            logMessage(`[FILE] Loaded target: ${file.name}`);
+        }
+
+        function logMessage(text, type = '') {
+            const line = document.createElement('div');
+            line.className = `terminal-line ${type}`;
+            line.textContent = text;
+            terminalLog.appendChild(line);
+            terminalLog.scrollTop = terminalLog.scrollHeight;
+        }
+
+        function resetUI() {
+            progressContainer.style.display = 'none';
+            progressBar.style.width = '0%';
+            resultBox.style.display = 'none';
+            resultBox.className = 'result-box';
+        }
+
+        // Start Artificial Scanning Simulation
+        scanBtn.addEventListener('click', () => {
+            if (!selectedFile) return;
+
+            // Lock UI
+            scanBtn.disabled = true;
+            progressContainer.style.display = 'block';
+            resetUI();
+            progressContainer.style.display = 'block';
+
+            logMessage(`[START] Initiating Deep AI Heuristic Analysis...`);
+
+            let progress = 0;
+            const stages = [
+                { pct: 15, msg: "Deconstructing file hashes & headers..." },
+                { pct: 35, msg: "Running Neural Network pattern matching..." },
+                { pct: 60, msg: "Checking threat database for malware signatures..." },
+                { pct: 85, msg: "Analyzing behavioral risk scores..." },
+                { pct: 100, msg: "Finalizing diagnostic threat report..." }
+            ];
+
+            let stageIndex = 0;
+
+            const interval = setInterval(() => {
+                if (stageIndex < stages.length) {
+                    const stage = stages[stageIndex];
+                    progress = stage.pct;
+                    progressBar.style.width = `${progress}%`;
+                    statusText.textContent = stage.msg;
+                    logMessage(`[SCAN] ${stage.msg}`);
+                    stageIndex++;
+                } else {
+                    clearInterval(interval);
+                    completeScan();
+                }
+            }, 800);
+        });
+
+        function completeScan() {
+            scanBtn.disabled = false;
+
+            // Simulate result (90% Safe, 10% Threat for demonstration)
+            const isThreat = Math.random() < 0.2; 
+
+            resultBox.style.display = 'block';
+
+            if (isThreat) {
+                resultBox.className = 'result-box threat';
+                resultTitle.textContent = '🚨 Threat Detected!';
+                resultDesc.textContent = `AI Confidence: 98.4%. Potential Trojan/Ransomware heuristic patterns discovered in ${selectedFile.name}. File has been quarantined.`;
+                logMessage(`[DANGER] Malware detected! Quarantine protocol active.`, 'danger');
+            } else {
+                resultBox.className = 'result-box safe';
+                resultTitle.textContent = '✅ File Clean';
+                resultDesc.textContent = `AI Confidence: 99.9%. No malicious signatures, hidden payload, or suspicious behavior detected in ${selectedFile.name}.`;
+                logMessage(`[CLEAN] No malicious threats identified.`, '');
+            }
+        }
+    </script>
+</body>
+</html>
+
