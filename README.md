@@ -1,1 +1,1 @@
-# AI Digital Virus Detector ☣️
+# AI Digital Virus Scanner ☣️
